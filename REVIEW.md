@@ -76,10 +76,10 @@ or move to a database that handles such concurrent writes safely.
 - **Why it's a problem**: malformed requests either silently corrupt the JSON data store (no error surfaced to the client or logs at all) or produce an unrelated internal exception that gets misclassified as a 500, hiding what is actually a 400-level client error.
 - **Fix**: validate the request body (required fields, types) at the controller boundary and throw new HttpError(400, '<specific message>') on failure, matching the pattern used in Tasks.
 
-## 2. task.validator.js exists but is unused        ''''' check '''''''''
-- **What**: tasksController.js's createTask/patchTask contain hand-written inline validation instead of calling the existing validateCreateTask/validateUpdateTask from task.validator.js. Critically, the inline version omits the unknown-field rejection (ensureNoUnknownFields) that the unused validator implements.
-- **Why it's a problem**: this is a real mass-assignment vulnerability, not just a duplication issue — clients can pass arbitrary extra fields (e.g. a client-supplied id) straight through to tasksService.createTask, something the existing (unused) validator was specifically built to prevent. It also means validation errors bypass the centralized errorHandler response format, losing structured .details and creating two independently-maintained sources of truth for the same validation rules.
--**Fix**: delete the inline validation in the controller and call validateCreateTask/validateUpdateTask instead, exactly as I originally (incorrectly) assumed was already done. This removes duplicated logic, restores the unknown-field/mass-assignment protection, and routes all validation errors through the standard HttpError → errorHandler flow with proper .details.
+## 2. task.validator.js exists but is unused
+- **What**: tasksController.js's createTask/patchTask contain hand-written inline validation instead of calling the existing `validateCreateTask()/validateUpdateTask()` from `task.validator.js.`.
+- **Why it's a problem**: This is not only a duplication logic issue. It also means validation errors bypass the centralized errorHandler response, losing the structured middleware format.
+-**Fix**: delete the inline validation in the controller and call `validateCreateTask()/validateUpdateTask()`.
 
 # Performance
 ## 1. Activity Log Synchronous I/O operations

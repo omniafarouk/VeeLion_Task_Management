@@ -34,6 +34,7 @@ async function getTaskById(taskId) {
 }
 
 async function createTask(payload) {
+  // This is a redundant validation logic, it is valid for if the function was called from other place than the task controller function otherwise its redundant
   if (!payload.title || typeof payload.title !== 'string') {
     throw new HttpError(400, 'Invalid title.');
   }
