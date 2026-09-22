@@ -50,6 +50,14 @@ why its a strength:
 - **Why it's a problem**: This is called "dirty code" which having duplicated logic that causes confusion and affect code readability
 - **Fix**: merge both into one function `loadData`
 
+## 7. Duplicate Validation Logic in Task Module in both `task.controller` and `task.service`
+- **What**: There is duplicate validation lofic between tasks module controller and service layer which basically validates the same thing
+- **Why it's a problem**: This not only confuses and reduces code quality, It also consumes time in both layers for redundant operations
+- **Fix**: Insert the validation logic in either service or controller layer. The point, however is if the validation logic was inserted in the controller layer
+    * pros: Fast rejection in case of invalid request
+    * cons: The service layer would have to trust any other module to validate and sanitize the data if there was internal cross-communication between the 2 modules
+If the validation logic was in service layer, It would be the opposite, so its kind of architecture tradeoff that have to be consistent along the whole code design.
+
 # Bugs
 
 ## 1. Activity Log having no consistent error handling with tasks Module
@@ -64,10 +72,27 @@ Finally, This would be a huge problem/bug in case of turning activity logging in
 - **Fix**: create a mutex from the start to the end to create an atomic block for concurrent functions to be safely isolated
 or move to a database that handles such concurrent writes safely.
 
-## 3.Non-unique ID generation `(String(Date.now()))` in `createNewActivity()`
-**What**: IDs are derived from the current millisecond timestamp with no uniqueness guarantee.
-**Why it's a problem**: two requests processed within the same millisecond, receive identical IDs. This makes Id not a unique key in the file, in turn corrupting any lookup-by-ID logic..
-**Fix**: use `crypto.randomUUID()` as a secure, safe function for such logic, which is what is actually used in tasks module from the common utils `Id.json` file
+## 3. Non-unique ID generation `(String(Date.now()))` in `createNewActivity()`
+- **What**: IDs are derived from the current millisecond timestamp with no uniqueness guarantee.
+- **Why it's a problem**: two requests processed within the same millisecond, receive identical IDs. This makes Id not a unique key in the file, in turn corrupting any lookup-by-ID logic..
+- **Fix**: use `crypto.randomUUID()` as a secure, safe function for such logic, which is what is actually used in tasks module from the common utils `Id.json` file
+
+## 4. Different Validation logic between task.service and task.controller 
+- **What**: Validation of title in task.controller is validating only if title isn't empty 
+```jsx
+  payload.title = payload.title.trim();
+  if (!payload.title) {
+    return res.status(400).json({ error: { message: 'title cannot be empty' } });
+    }
+```
+while validation in task.service validates title is more than 2 characters.
+```jsx
+  if (typeof updates.title === 'string' && updates.title.length < 2) {
+    throw new HttpError(400, 'Title is too short.');
+  }
+```
+- **Why its a problem**: These validations don't contradict each other however enforcing different rules with the exact same logic in both places makes the code redundant and if later the code was "cleaned up" by deleting the duplicate validation, the tighter validation could accidentally be removed since it looks the same.
+- **Fix**: Enforce ONE validation/ requirement for the field and make it consistent for the whole module 
 
 # Security
 ## 1. Activity Log `addActivity()` has no input validation
@@ -91,3 +116,13 @@ or move to a database that handles such concurrent writes safely.
 
 > This is however would cause a problem in not handling errors correctly, as previously the code was dependent on express implicit synchronous error handling
 > Therefore, this would propagate as a bug in error handling that need to be fixed
+
+
+# Best Practice Code implementations
+1. each module split into 3 layers for separation of concern
+2. using validation method that handles all kind of validation and sanitization method instead of manual listing one by one
+3. using Array in the manual validation to prevent mass-assignment:
+`ensureNoUnknownFields` rejects any field not in ALLOWED_FIELDS = ['title', 'completed'] — including presumably id, createdAt, etc. if a client sends them. This is actually a good defensive pattern (prevents mass-assignment, e.g. a client trying to set their own id or a server-controlled status field) — worth calling out as a deliberate security-conscious choice in your "Positive Observations" section rather than something to fix, since it's directly relevant to the mass-assignment risk you flagged for Activity Log earlier.
+4. Validate in service as well as controller to sanitize data coming from other service instead of from a controller (HTTP request)
+5. Separation of concern between `app` responsibilities and `server` responsibilties
+6. Renaming variables into meaningful names for clarity and clean code mentality
