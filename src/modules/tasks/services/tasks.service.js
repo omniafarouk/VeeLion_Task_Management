@@ -34,18 +34,19 @@ async function getTaskById(taskId) {
 }
 
 async function createTask(payload) {
-  // This is a redundant validation logic, it is valid for if the function was called from other place than the task controller function otherwise its redundant
-  if (!payload.title || typeof payload.title !== 'string') {
-    throw new HttpError(400, 'Invalid title.');
-  }
+  // This is a redundant validation logic
+  // it is valid only if the function was called from another module directly otherwise its redundant
+  // if (!payload.title || typeof payload.title !== 'string') {
+  //   throw new HttpError(400, 'Invalid title.');
+  // }
 
-  if (payload.completed !== undefined && typeof payload.completed !== 'boolean') {
-    throw new HttpError(400, 'Invalid completed value.');
-  }
+  // if (payload.completed !== undefined && typeof payload.completed !== 'boolean') {
+  //   throw new HttpError(400, 'Invalid completed value.');
+  // }
 
-  if (payload.completed === undefined) {
-    payload.completed = false;
-  }
+  // if (payload.completed === undefined) {
+  //   payload.completed = false;
+  // }
 
   const tasks = await readJsonArray(TASKS_FILE_PATH);
   const newTask = buildTaskRecord(payload);
@@ -57,13 +58,13 @@ async function createTask(payload) {
 }
 
 async function updateTask(taskId, updates) {
-  if (typeof updates.title === 'string' && updates.title.length < 2) {
-    throw new HttpError(400, 'Title is too short.');
-  }
+  // if (typeof updates.title === 'string' && updates.title.length < 2) {
+  //   throw new HttpError(400, 'Title is too short.');
+  // }
 
-  if (updates.completed !== undefined && typeof updates.completed !== 'boolean') {
-    throw new HttpError(400, 'completed must be boolean');
-  }
+  // if (updates.completed !== undefined && typeof updates.completed !== 'boolean') {
+  //   throw new HttpError(400, 'completed must be boolean');
+  // }
 
   const tasks = await readJsonArray(TASKS_FILE_PATH);
   const taskIndex = tasks.findIndex((item) => item.id === taskId);
@@ -73,7 +74,8 @@ async function updateTask(taskId, updates) {
   }
 
   const existingTask = tasks[taskIndex];
-  const updatedTask = {
+  const updatedTask = {   // the spread operation here mean that the source is trusted to validate against mass assignment
+    // hence the validation in task controller
     ...existingTask,
     ...updates,
     updatedAt: new Date().toISOString(),

@@ -26,7 +26,7 @@ why its a strength:
 * Logs 5xx errors server-side via console.error.
 * Only exposes error.details when the error is a known HttpError with details — avoids leaking arbitrary object internals.
 
-# 3. Separation of responsibility between app.js and server.js
+## 3. Separation of responsibility between app.js and server.js
 - **what** : The Separation of Responsibilty between both `app.js` and `server.js` files, that could have been in one file as many projects I have seen before. is actually a clean normalized of handling different concerns
 - **why**: This improves maintainability and code quality:
     * `app.js`: defines what the application does: middleware, routes, error handling. It builds and exports the configured Express app object, but never starts listening on a port.

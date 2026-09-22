@@ -33,7 +33,10 @@ function normalizeTitleIfPresent(payload, normalized) {
   if (!trimmedTitle) {
     throw new HttpError(400, '"title" cannot be empty.');
   }
-
+  // Enforce One more constraint was only mentioned in task service layer
+  if (trimmedTitle.length < 2) {
+    throw new HttpError(400, '"Title is too short.');
+  }
   normalized.title = trimmedTitle;
 }
 

@@ -10,7 +10,7 @@ async function loadData() {   // Make the function async for optimized performan
   return readJsonArray(ACTIVITY_FILEPATH);
 }
 
-// function loadDataB() {
+// function loadData() {    // Synchronous Operation
 //   if (!fs.existsSync(fp)) {
 //     fs.writeFileSync(fp, '[]');
 //   }
