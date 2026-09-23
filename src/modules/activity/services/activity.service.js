@@ -1,4 +1,3 @@
-const fs = require('node:fs');
 const path = require('node:path');
 const { createId } = require('../../../utils/id');
 const { readJsonArray, writeJsonArray } = require('../../../utils/jsonStore');

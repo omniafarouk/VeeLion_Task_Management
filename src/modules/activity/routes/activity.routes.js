@@ -5,7 +5,7 @@ const asyncHandler = require('../../../middleware/asyncHandler');
 
 const activityRouter = express.Router();
 
-activityRouter.get('/', asyncHandler(activityController.get_activity));
+activityRouter.get('/', asyncHandler(activityController.getActivity));
 activityRouter.post('/', asyncHandler(activityController.addActivity));
 
 module.exports = activityRouter;

@@ -58,6 +58,16 @@ why its a strength:
     * cons: The service layer would have to trust any other module to validate and sanitize the data if there was internal cross-communication between the 2 modules
 If the validation logic was in service layer, It would be the opposite, so its kind of architecture tradeoff that have to be consistent along the whole code design.
 
+## Renaming into consistent clear naming convention
+- **What**:
+- **Why**: For good code quality "clean code", a naming convention and clear names must be used to for easy maintainability and avoiding confusion
+- **Fix**: 
+    1. Renaming `get_activity()` in activity.controller to `getActivity` for consistent camelCase naming convention for all functions
+    2. Renaming `aSvc` into clear name `activityService`
+    3. Renaming `fp` in activity.service into `ACTIVITY_FILEPATH`, descriptive and SCREAMING_SNAKE_CASE convention for constant variable indication
+    4. `c` in activity.router into `activityRouter`
+
+
 # Bugs
 
 ## 1. Activity Log having no consistent error handling with tasks Module
@@ -72,8 +82,17 @@ Finally, This would be a huge problem/bug in case of turning activity logging in
 - **Fix**: create a mutex from the start to the end to create an atomic block for concurrent functions to be safely isolated
 or move to a database that handles such concurrent writes safely.
 
-## 3. Non-unique ID generation `(String(Date.now()))` in `createNewActivity()`
-- **What**: IDs are derived from the current millisecond timestamp with no uniqueness guarantee.
+## 2. Read-modify-write race condition — no write serialization in `jsonStore.js`    <-------------- check
+- **What**: `readJsonArray`/`writeJsonArray` provide no locking. Every mutating operation built on them — `tasksService.createTask`, `updateTask`, `deleteTask`, and `activityService.createNewActivity` — reads the full file, mutates its own in-memory copy, and writes the whole file back, with no coordination between concurrent calls.
+- **Why it's a problem**: under concurrent requests (even different tasks being updated at once, or a task update racing an activity write), one request's change can be silently and completely lost when a second request's write overwrites the file with a version that predates the first request's change — classic last-write-wins race condition. This affects both modules identically, since both are built on the same underlying utility, so it's a single root cause rather than an isolated activity-log bug.
+- **Fix**: serialize writes per file — e.g. an in-process async mutex/queue keyed by file path, added once inside `jsonStore.js` so every caller is protected automatically rather than each service reimplementing its own locking. Note this only guards against races within a single Node process; if the app ever ran multiple instances, real file locking (e.g. `proper-lockfile`) or a datastore would be needed instead.
+
+-----
+Fix: wrap each read-modify-write sequence in a per-file mutex (async-mutex or a hand-rolled promise chain) at the service layer. Simpler to add incrementally, but the lock scope must be kept in sync with file ownership by convention — a centralized lock inside jsonStore.js, keyed by file path, would remove that responsibility from each service author.
+-----
+
+## 3. Non-unique ID generation in `createNewActivity()`
+- **What**: IDs are derived from the current millisecond timestamp `(String(Date.now()))`  with no uniqueness guarantee.
 - **Why it's a problem**: two requests processed within the same millisecond, receive identical IDs. This makes Id not a unique key in the file, in turn corrupting any lookup-by-ID logic..
 - **Fix**: use `crypto.randomUUID()` as a secure, safe function for such logic, which is what is actually used in tasks module from the common utils `Id.json` file
 
@@ -96,10 +115,9 @@ while validation in task.service validates title is more than 2 characters.
 
 # Security
 ## 1. Activity Log `addActivity()` has no input validation
-### Weakness
 - **What**: addActivity writes req.body directly with no checks that required fields(info and action) are present or well-formed.
 - **Why it's a problem**: malformed requests either silently corrupt the JSON data store (no error surfaced to the client or logs at all) or produce an unrelated internal exception that gets misclassified as a 500, hiding what is actually a 400-level client error.
-- **Fix**: validate the request body (required fields, types) at the controller boundary and throw new HttpError(400, '<specific message>') on failure, matching the pattern used in Tasks.
+- **Fix**: validate the request body (required fields, types) at the controller boundary and throw new HttpError(400, '<specific message>') on failure, matching the pattern used in Tasks Module.
 
 ## 2. task.validator.js exists but is unused
 - **What**: tasksController.js's createTask/patchTask contain hand-written inline validation instead of calling the existing `validateCreateTask()/validateUpdateTask()` from `task.validator.js.`.
