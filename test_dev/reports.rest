@@ -1,6 +1,0 @@
-
-####################
-// 1. Get Tasks Summary Report
-####################
-GET http://localhost:3000/reports/tasks-summary
-Content-Type: application/json
