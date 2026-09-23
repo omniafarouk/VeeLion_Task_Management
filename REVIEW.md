@@ -2,7 +2,7 @@
 
 ## Methodology
 
-This review is organized into four parts: **Positive Observations**, covering existing patterns in the codebase that are already well designed and worth preserving, and **Issues**, categorized as required into Bugs, Performance, Maintainability, Security, and Code Quality, Best Practices applied and reports module logic
+This review is organized into four parts: **Positive Observations**, covering existing patterns in the codebase that are already well designed and worth preserving, and **Issues**, categorized as required into Bugs, Performance, Maintainability, Security, and Code Quality, **Best Practices** applied and **reports module logic**
 
 For each issue, I followed a consistent format:
 
