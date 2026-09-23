@@ -1,0 +1,17 @@
+####################
+// 1. Get All Activities
+####################
+GET http://localhost:3000/activity
+Content-Type: application/json
+
+####################
+// 2. Create New Activity
+#####################
+POST http://localhost:3000/activity
+Content-Type: application/json
+
+{
+    "info": "fire",
+    "action": "firefighter",
+}
+

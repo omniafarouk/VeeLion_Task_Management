@@ -15,9 +15,23 @@
   },
   {
     "id": "4398f26b-f527-4eeb-b74c-cd4c0ecc9060",
-    "title": "A new task",
-    "completed": false,
+    "title": "Another completed task",
+    "completed": true,
     "createdAt": "2026-04-08T10:11:56.354Z",
-    "updatedAt": "2026-04-08T10:11:56.354Z"
+    "updatedAt": "2026-09-23T08:20:36.077Z"
+  },
+  {
+    "id": "dd8cac50-ed8f-46d6-84c3-c046a5c33aa2",
+    "title": "New Test Task",
+    "completed": false,
+    "createdAt": "2026-09-23T08:21:14.936Z",
+    "updatedAt": "2026-09-23T08:21:14.936Z"
+  },
+  {
+    "id": "79bb106f-0ef5-4468-a06f-c11035d6607c",
+    "title": "Test Task Finale",
+    "completed": true,
+    "createdAt": "2026-09-23T08:21:28.622Z",
+    "updatedAt": "2026-09-23T08:22:50.532Z"
   }
 ]

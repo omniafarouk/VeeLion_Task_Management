@@ -20,7 +20,7 @@ async function readJsonArray(filePath) {
 }
 
 async function writeJsonArray(filePath, data) {
-  await fs.writeFile(fxilePath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8');
+  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8');
 }
 
 module.exports = {

@@ -28,7 +28,7 @@ function getAllActivity() {
 }
 
 async function createNewActivity(b) { // Make write async with isolation guarantee
-  const list = loadData();
+  const list = await loadData();
   const one = {
     id: createId(),   // This may cause collisions in case of 2 concurrent requests
     action: b.action,
