@@ -1,12 +1,3 @@
-> Format Used
-
->Bug: ---- 
->what's the problem: =---- 
->why is it a problem: -------
->Fix: -----
-
-TODO: Mention At first what each issue problems may be and how I based my issues sections
-
 # Maintainability or Code quality
 
 ## 1. Async Handler Middleware 
@@ -51,7 +42,7 @@ why its a strength:
 - **Fix**: merge both into one function `loadData`
 
 ## 7. Duplicate Validation Logic in Task Module in both `task.controller` and `task.service`
-- **What**: There is duplicate validation lofic between tasks module controller and service layer which basically validates the same thing
+- **What**: There is duplicate validation logic between tasks module controller and service layer which basically validates the same thing
 - **Why it's a problem**: This not only confuses and reduces code quality, It also consumes time in both layers for redundant operations
 - **Fix**: Insert the validation logic in either service or controller layer. The point, however is if the validation logic was inserted in the controller layer
     * pros: Fast rejection in case of invalid request
@@ -59,7 +50,7 @@ why its a strength:
 If the validation logic was in service layer, It would be the opposite, so its kind of architecture tradeoff that have to be consistent along the whole code design.
 
 ## Renaming into consistent clear naming convention
-- **What**:
+- **What**: There are variables/functions that aren't well named throughout the code (activity module especially)
 - **Why**: For good code quality "clean code", a naming convention and clear names must be used to for easy maintainability and avoiding confusion
 - **Fix**: 
     1. Renaming `get_activity()` in activity.controller to `getActivity` for consistent camelCase naming convention for all functions
@@ -139,8 +130,18 @@ while validation in task.service validates title is more than 2 characters.
 # Best Practice Code implementations
 1. each module split into 3 layers for separation of concern
 2. using validation method that handles all kind of validation and sanitization method instead of manual listing one by one
-3. using Array in the manual validation to prevent mass-assignment:
-`ensureNoUnknownFields` rejects any field not in ALLOWED_FIELDS = ['title', 'completed'] — including presumably id, createdAt, etc. if a client sends them. This is actually a good defensive pattern (prevents mass-assignment, e.g. a client trying to set their own id or a server-controlled status field) — worth calling out as a deliberate security-conscious choice in your "Positive Observations" section rather than something to fix, since it's directly relevant to the mass-assignment risk you flagged for Activity Log earlier.
-4. Validate in service as well as controller to sanitize data coming from other service instead of from a controller (HTTP request)
-5. Separation of concern between `app` responsibilities and `server` responsibilties
-6. Renaming variables into meaningful names for clarity and clean code mentality
+3. Validate in service as well as controller to sanitize data coming from other service instead of from a controller (HTTP request)
+
+
+## Reports Module Service Layer Logic
+1. Recent Activity time window is assumed within a day, hardcoded into the codebase
+    >Can be changed into a timeline query field coming from the request.
+   
+2. The Task summary response desired in the readme.md file included tasks status of (done, todo, inprogress).  
+However the task data model only has a boolean `completed` field, therefore it is mapped to
+    - completed === false -> todo
+    - completed === true  -> done
+    - in-progress is always 0 since it cannot be derived from the data, otherwise another logic/schema would have to be applied
+    (like changing the completed into an enum status)
+
+3. Building Task Summary included a `promise.all` to fetch both activities and tasks independtly and concurrently for optimized performance.
